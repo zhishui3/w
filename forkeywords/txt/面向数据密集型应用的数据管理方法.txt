@@ -1,0 +1,695 @@
+﻿
+
+1 引言 
+        当代社会，从天文地理、人工智能、信息安全
+
+到人口普查、交通信息，各种图像、视频、音乐、
+
+首先，数据密集型应用针对的是海量、动态、
+分布、异构的，甚至是多维的数据。数据量达到 TB
+或 PB 级别，因此传统的数据存储、索引技术不再
+
+文本等多媒体信息处理，数据规模越来越大，达到
+TB 级，甚至到 PB 级，这些数据都具有海量、异构、
+
+适用。数据地理上的分布性、展示方式和模型的异
+
+构性增大了数据获取的困难。数据又非常容易发生
+
+半结构化或非结构化的特点。通过网络，基于海量
+数据的挖掘、分析以及处理等 Web 服务成为信息社
+
+更新等变化，传统的针对静态数据库的数据管理技
+术根本不能满足需求。 
+
+会发展的趋势。因此作为这种新型服务的支撑技术
+的，针对海量信息的数据密集型（Data-Intensive）
+应用[1,2,4,6]已引起广泛关注。 
+
+数据密集型应用是一种以数据为核心的应用
+
+模式，其特点是在运行过程中，需要不断获取、更
+
+新、存储大量数据，并对这些数据进行各种计算，
+其中包含两层含义： 
+(cid:122)  处理对象是数据，是围绕数据展开的计算。一
+
+般数据密集型计算所处理的数据是海量的并
+
+其次，数据密集型应用中计算的含义是多元
+
+的。它包括数据查询搜索等传统数据处理，也包括
+
+分析、理解等智能处理。这时的数据分析或挖掘算
+法必须适用于海量、分布、异构数据的特点。 
+
+第三，海量数据往往分布在不同的地方，因此
+以 Web 服务方式提供应用接口是一种有效的方式。
+
+数据密集型应用的服务接口必须提供全面的流程
+
+描述功能，并提供良好的客户机与服务器之间的基
+于 Web 服务的交互功能。 
+
+且更新变化快，往往具有分布、异构、多样化
+
+综上所述，面向数据密集型应用的数据管理是
+
+的特点。因此，传统数据管理模式和方法不能
+满足其需要。 
+
+一项具有现实意义的研究课题。为此建立一个可扩
+
+展、高效的面向数据密集型应用的数据管理模型。
+
+(cid:122)  对海量信息的各种处理技术，从数据的获取到
+
+基于该模型，设计并实现了一个房产数据密集型应
+
+管理再到分析理解，不同于传统的数据检索和
+
+数据库查询，也不同于传统科学计算和高性能
+
+计算，它集中展示了高性能计算、海量数据分
+析和挖掘的综合应用。 
+
+面向数据密集型应用的数据管理问题是一个
+
+用原型系统。在该系统上，用户可以定制自己的个
+性化数据访问，提高查询效率。 
+
+本文第 2 节介绍了数据密集型应用和面向数
+据密集型应用的数据管理方面的相关工作，第 3 节
+建立了面向数据密集型应用的数据管理模型，第 4
+
+核心问题。它的管理问题与传统的数据管理相比，
+
+节设计并实现了一个房产数据密集型应用原型系
+
+在应用环境、数据规模、应用需求等方面均存在差
+异，主要表现有如下几个特点： 
+
+统，并且进行了仿真实验和效率分析，最后一节对
+本文工作进行总结并对后续研究进行展望。 
+
+2 相关工作 
+
+数据密集型应用是一种以数据为核心的应用
+
+模式，最初数据密集型应用主要出现在科学计算领
+
+域，具体包括天文学、高能物理学以及生物信息学
+
+等。网格计算发展与分布式计算，研究如何将一个
+
+需要非常巨大计算能力才能解决的问题分成很多
+
+小的部分，分给很多计算机进行处理，最后将这些
+
+计算结果综合起来得到最终结果。数据网格的主要
+
+作用是为分布式环境下的数据密集型应用提供基
+
+础设施和服务，以实现对分布式存储资源中海量数
+
+据集的访问、移动和修改。现如今许多解决科学计
+
+算问题的数据密集型应用都是网格环境下的，如
+Kepler[19]，Globus[5]等。Kepler 是一种面向角色的
+数据建模方法，利用 SRB[20]系统在网格环境下进行
+大规模数据建模。Globus 是一种用于构建计算网格
+的开放体系结构、开放标准的项目。目前，Globus
+
+已被应用于全球数百个站点和几十个主要的网格
+计算项目，如 NASA 网络、欧洲数据网格和美国国
+家技术网格等。 
+
+随着云计算日益受到重视，目前出现了一些云
+计 算 环 境 下 的 数 据 管 理 系 统 ， 如 Google  File 
+System[18]和 Hadoop。这些网络存储架构都是基于
+云存储[3]技术。云存储是指通过集群应用、网格技
+
+术或分布式文件系统等功能，将网络中大量各种不
+
+同类型的存储设备通过应用软件集合起来协同工
+
+作，共同对外提供数据存储和业务访问功能的一个
+系统。 
+
+在学术界，Hoang  Tam  Vo 等人提出一个弹性
+云存储系统——ecStore[11]，支持数据自动分区和复
+制，负载均衡，高效范围查询和事务访问。Donald 
+Kossmann 等 人 提 出 一 个 模 块 化 云 存 储 系 统
+——Cloudy[12]，Cloudy 为分布式数据存储提供了一
+个高度灵活的架构，并且可以操控多种工作负载。
+基于一个通用数据模型，Cloudy 可定制以满足不同
+
+应用需求。由于越来越多的应用和它们的数据被放
+
+置到移动设备上，移动系统的独立存储成为一个关
+键问题。Yuan Dong 等人提出了一个无线网络文件
+系统——RFS[13]，该系统提供设备感知缓存管理和
+客户数据安全和隐私保护。 
+
+面向数据密集型应用的数据管理是核心问题。
+在云存储集群查询优化方面，Jing Zhao 等人对于云
+
+数据管理系统的结构化数据查询，提出了一种高效
+的查询处理算法[15]。该算法基于 MapReduce[9]，将
+工作划分成不同的子用户查询。同时在云的副本
+
+中，映射到 k+1 个子查询。此外为了均衡负载，采
+用了两个调度策略。Pawel Jurczyk 等人设计和开发
+了 一 个 基 于 P2P 查 询 和 数 据 操 作 的 基 础 设 备
+——DObjects[16]，在该设备上，查询处理能够充分
+利用所有的分布式资源，以最大限度地减少查询的
+响应时间，并最大限度提高系统的吞吐量。Adrian 
+Daniel  Popescu 等人提出了一种自适应的软件架构
+[17]，它可以根据响应时间自行在 MapReduce 和并
+行数据库管理系统之间切换，以便有效地查询。 
+
+可见，数据密集型应用已被广泛应用于网格环
+
+境和云计算环境，很多大公司也推出了各自的云计
+
+算数据管理系统。针对数据密集型应用的数据管
+
+理，也有很多专家进行了相应的研究，但对于优化
+
+数据访问，查询效率等多方面的研究较少。因此，
+
+本文建立了一个面向数据密集型应用的数据管理
+
+模型，基于该模型，做了数据访问、查询效率等多
+方面的分析。 
+
+3 面向数据密集型应用的数据管理 
+
+3.1 基本思想 
+
+针对面向数据密集型应用的数据管理需要，我
+
+们研究一种在云环境下的部署数据密集型应用的
+
+数据管理方法。首先，对面向数据密集型应用的数
+
+据管理问题进行建模。在此基础上，实现对大规模
+
+数据的动态分块与合理布局，进而对数据进行分类
+
+索引，构建数据虚拟视图，完成对数据的高效查询
+与访问，最终推动数据的集成应用和有效增值。 
+
+因此，我们针对数据密集型应用中的海量、异
+
+构、非结构化数据的管理问题，以高可用性、高效
+
+和智能数据处理为目标，研究并开发数据存储、查
+
+询以及数据服务提供等关键技术。首先，建立一个
+
+可扩展、高效的面向数据密集型应用的数据管理模
+
+型，定义一个由分布式文件系统、分布式数据库和
+
+虚拟数据视图组成的三层数据组织结构。基于该模
+
+型，建立虚拟数据视图，既方便用户查询，也可以
+
+对数据进行有效管理；设计高效数据查询处理算
+法，减少用户查询响应时间。 
+
+3.2 数据管理模型 
+
+基于上述思想，我们搭建面向数据密集型应用的数
+据管理模型，如图 1 所示： 
+
+管理和视图管理等技术，实现云存储中多个存储设
+
+备之间的协同工作，使多个的存储设备可以对外提
+
+供同一种服务，并提供更大更强更好的数据访问性
+能。 
+
+建立一个分布式文件系统。该分布式文件系统
+采用 master/slave 架构，由一个主节点和若干个子
+
+节点组成。主节点是一个中心服务器，负责管理文
+
+件系统和客户端对文件的访问。子节点在集群中一
+
+般是一个节点一个，负责管理节点上它们附带的存
+
+储。在内部，一个文件被分成一个或多个块，每个
+
+块都存储在子节点的集合里。主节点负责文件系统
+
+的操作，如打开、关闭、重命名文件和目录，同时
+
+决定块到具体子节点的映射。子节点在主节点的指
+
+挥下进行块的创建、删除和复制。主节点可通过我
+们建立的一些视图快速查询到子节点中的数据。   
+
+ 
+
+在分布式文件系统上层建立一个分布式数据
+
+图 1 面向数据密集型应用的数据管理模型 
+
+库，对数据进行管理。通过数据分块、数据布局等
+
+3.2.1 数据源 
+
+数据源是指提供各类结构化、半结构化或非
+
+结构化数据的数据中心。 
+
+目前常用的数据源有：1.观测数据，即现场实
+
+际观察测量到的数据，包括野外实地勘测数据、台
+站观测记录数据等；2.分析数据，即利用化学、物
+理等科学方法分析测定的数据；3.图形数据，医学、
+航空等行业需求的图形数据；4.统计调查数据，各
+
+种类型的调查报表、社会调查数据等。目前，中国
+的数据源数量庞大，产生的数据量达到 TB、甚至
+PB 级别，结构各异，动态变化且实时更新。 
+
+3.2.2 数据接口与存储层 
+
+数据接口与存储层完成对数据源提供的数据
+
+的标准化获取和对存储设备的管理。 
+
+由于数据源提供的数据的结构的不一致性，在
+
+数据接口与存储层需经过数据标准化获取，进行数
+
+据解析与抽取和数据格式化转换，转换为存储设备
+
+存储的标准格式。云存储中的存储设备往往数量庞
+
+大且分布在不同地域，彼此之间通过广域网、互联
+网或者  FC 光纤通道网络连接在一起。并且，在该
+
+层有一个统一存储设备管理系统，可以实现存储设
+
+备的逻辑虚拟化管理、存储设备注册、存储设备虚
+
+拟化、多链路冗余管理、以及存储设备的状态监控
+和维护升级。 
+
+3.2.3 数据管理层 
+
+数据管理层通过分布式文件管理、分布式数据
+
+技术将数据分块布局存储于分布式文件系统，再通
+
+过数据加密、容错、压缩、备份等技术和措施保证
+
+云存储中的数据不会丢失，保证云存储自身的安全
+和稳定。 
+
+此外，在该层可建立数据视图等方便用户对数
+
+据进行高效查询。 
+
+3.2.4 数据应用层 
+
+在数据应用层，可设计高效的并行数据查询优
+
+化算法，也可设计数据挖掘和分析算法，减少用户
+
+查询响应时间。不同的云存储运营单位可以根据实
+际业务类型，开发不同的 Web 服务接口，提供不同
+的 Web 服务。用户通过手机、PDA、PC 机等各种
+
+方式登陆云存储系统，实现数据访问、数据分析等
+应用。 
+
+图 2 显示了用户使用该模型获取服务的数据流
+
+程图。在用户使用该模型之前，数据接口与存储层
+
+将数据源提供的数据进行解析和格式转换，保存至
+
+各子节点中。用户提交服务后，数据应用层将用户
+
+需求发送至主节点。主节点获取作业后将作业通过
+JobTracker 将作业分成若干任务交给子节点中的
+TaskTracker，同时也通过 Hbase 的 HMaster 像子节
+点 中 的 HRegionServer 提 交 请 求 。 子 节 点 通 过
+MapReduce 计算后将结果通过数据应用层返回给
+用户。 
+
+子节点，搭建 Hadoop 分布式文件系统（HDFS）。
+其次，在 HDFS 之上搭建 Hbase 数据库。最后，将
+Hive 环境与 Hbase 整合，使得 Hive 中建立的表格
+存储于 Hbase。 
+
+4.2.2 性能分析 
+
+使用 Hive[7]进行查询时会扫描整张表，一般
+用户只关注表内部分内容，扫描整张表会浪费很多
+时间做不必要的工作，因此我们使用 Hive 建表时
+指定 Partition 的分区空间，例如表 1 所示房产信息
+表，House 作为关键字，City 作为分区空间，创建
+分区表，HiveQL 语言如下： 
+CREATE TABLE HouseInfo_Partition (House String, 
+District String, Type String,Year Int, Month Int, 
+HousePriceperQuarem-eter Float, BuildArea Float, 
+HousePrice Float, RecordCount Int) PARTITIONED 
+BY (City String); 
+
+表 1  房产信息表 
+
+House 
+City 
+District 
+Type 
+Year 
+Month 
+
+HousePriceperQuaremeter 
+
+BuildingArea 
+HousePrice 
+RecordCount 
+
+String 
+String 
+String 
+String 
+Int 
+Int 
+Float 
+Float 
+Float 
+Int 
+
+在房产信息基本表和房产信息分区表中分别
+
+查询杭州市各房产的平均房价，如图 4 所示。 
+
+在 Hive 中，表中的一个 Partition 对应于表下的
+一个目录，我们建立的分区表以 City 作为分区空
+
+ 
+
+图 2  数据流程图 
+
+4 实例与实验分析 
+
+基于上述模型，我们设计并实现了一个房产数
+
+据密集型应用原型系统。在该系统上，用户可以根
+据自己的查询需求，选择不同参数从而定制服务。 
+
+4.1 基于用户定制的个性化数据访问 
+
+根据用户定制的服务不同，每一次服务定制
+
+后，后台建立数据视图。例如，某位杭州的用户只
+
+关注杭州市各楼盘的平均房价，在建立视图时将查
+询条件设定为 City=’杭州’，如图 3(a)所示。如果该
+
+用户只关注杭州市西湖区各楼盘的平均房价，则将
+查询条件设定为 City=’杭州’ and District=’西湖’，如
+图 3(b)所示。这样提供给用户查询的视图中的全部
+
+信息均为用户需求，没有冗余信息，既提高了用户
+查询效率，也保护了其他信息的安全。 
+
+ 
+
+ 
+
+图 3(a)杭州市平均房价 
+(b)杭州市西湖区平均房价 
+
+        在图 3 所示的 Treemap 图中，颜色深浅和楼盘
+
+分配的区域大小均代表该楼盘的房价高低，颜色越
+
+深、区域越大则该楼盘房价越高。用户也可以查看
+到定制服务区域楼盘的文本信息。 
+
+间，因此查询杭州市各房产的平均房价时，不必搜
+索其他城市的冗余信息。从图 4 中可以看出，分区
+
+4.2 仿真实验与性能分析 
+
+4.2.1 实验环境 
+
+硬件环境：1 台戴尔 PowerEdge  R410 服务器
+（Intel 至强四核 5600 处理器，  4G 内存，160G 硬
+盘），7 台戴尔 Optiplex 780 商用台式机（Intel 酷睿
+2 双核 E7500 处理器，4G 内存，160G 硬盘）。 
+
+软件环境：Ubuntu10.10，JDK1.6.0_24，
+
+Hadoop-0.20.2，Hbase-0.20.6，Zookeeper-3.3.3，
+Hive-0.6.0。 
+
+首先，以服务器作为主节点，其余台式机为
+
+表中查询执行时间比基本表中查询执行时间略低，
+查询相应快。 
+
+ 
+
+图 4  分区表与基本表的执行时间的对比 
+
+率。 
+
+Hive 每一次查询提交后，首先计算该查询中需进
+行几个 MapReduce 任务，然后依次进行每个任务的
+Map 和 Reduce 操作。从图 5 中可以看出，随着每
+次查询 MapReduce 任务次数的增加，查询执行时间
+
+呈正比例增长。由于硬件配置的原因，每次
+
+MapReduce 任务执行时间大致相等，因此如果通过
+视图查询信息不能减少 MapReduce 的任务次数，那
+
+么通过建立视图并不能有效地缩短查询时间。
+
+参  考  文  献 
+
+[1] Ahrens JP, Hendrickson B, Long G, Miller S, Ross 
+R, Williams D. Data-Intensive Science in the US 
+DOE:  Case  Studies  and  Future  Challenges. 
+Computing in Science & Engineering. 2011.13(6): 
+14-23. 
+
+[2] Bryant RE. Data-Intensive Scalable Computing for 
+Scientific  Applications.  Computing  in  Science  & 
+Engineering. 2011. 13(6):25-33. 
+
+[3]  Kamara  S,  Lauter  K.  Cryptographic  cloud 
+storage//Workshop  on  Real-Life  Cryptographic 
+Protocols  and  Standardization  (RLCPS  2010). 
+2010.01. 
+
+[4]  Deelman  E,  Chervenak  A.  Data  management 
+scientific 
+challenges 
+IEEE 
+workflows//Proceedings 
+International  Symposium  on  Cluster  Computing 
+and the Grid(CCG-RID).2008:687-692. 
+
+data-intensive 
+
+t-he 
+
+of 
+
+of 
+
+ 
+
+图 5  视图查询与数据表查询的执行时间的对比 
+
+5 结论与未来工作 
+
+本文建立了一个面向数据密集型应用的数据
+
+管理模型，对模型中的各层次进行详细描述，基于
+
+该模型，定义了一个由分布式文件系统、分布式数
+
+据库和虚拟数据视图组成的三层数据组织结构。此
+
+外，设计并实现了一个房产数据密集型应用原型系
+
+统，并且进行了仿真实验和效率分析。根据用户定
+
+制的服务建立用户视图，方便用户对数据进行查
+询，但 Hive 查询是基于 MapReduce，在不减少
+MapReduce 任务次数的前提下，视图查询不能有效
+地缩短查询时间。 
+
+未 来 计 划 进 行 一 下 几 方 面 的 研 究 ： 根 据
+Hadoop 设置的分块大小，对数据进行动态分块，
+
+充分考虑数据传输次数、传输数据量大小、网络带
+
+宽等因素，对数据进行合理布局，涉及数据如何分
+
+布到各个节点和组件，如何并发高效地对数据进行
+
+访问，在保证查询执行效率的基础上兼顾全局负载
+均衡；根据 Hive 中 MapReduce 的任务建立机制，
+
+设计高效数据查询访问机制，可涉及到合理使用索
+
+引、避免或简化排序、消除对大型表行数据的顺序
+
+存取、避免相关子查询、避免困难的正规表达式、
+
+使用临时表加速查询、用排序来取代非顺序存取等
+方面降低 MapReduce 的任务次数，从而提高查询效
+
+[5]  Goldberg  J  A,  Bergman  H.  Computational 
+physiology of the neural networks of the primate 
+globus  pallidus: 
+function  and  dysfunction. 
+Neuroscience. 2011.198:171-192. 
+
+[6]  张钊宁.  数据密集型计算中任务调度模型的研
+究.  国防科学技术大学：计算机科学与技术. 
+2009. 
+
+[7] Thusoo A, Sen Sarma J, Jain N, ShaoZ, Chakka P, 
+Zhang N, Antony S, Li-u H, and Murthy R. Hive 
+–  A  Petabyte  Scale  Data  Warehouse  Using 
+Hadoop//26th  IEEE  International  Conference  on 
+Data  Engineering 
+2010: 
+996-1005. 
+
+20-10). 
+
+(ICDE 
+
+[8]  Lu  Xuefeng,  Cheng  Chengqi,  and  Gong  Jianya. 
+Review  of  data 
+storage  and  management 
+technologies  for  massive  remote  sensing  data. 
+Science 
+Sciences. 
+2011.54(12):3220-3232. 
+
+Technological 
+
+China: 
+
+[9]  Jeffrey  Dean,  Sanjay  Ghemawat.  Map-Reduce: 
+simplified  data  processing  on-large  clusters// 
+Proceedings of the 6th conference on Symposium 
+on Operating Systems Design & Implementation. 
+2004.11:10-10. 
+
+[10]  郑湃，崔立真，王海洋，徐猛.  云计算环境下
+面向数据密集型应用的数据布局策略与方法. 
+
+and 
+
+the  Kepler 
+
+system. 
+management 
+Concurrency  and  Computation:  Practice  and 
+Experience. 2006,18(10):1039-1065. 
+
+[20]  Baru  C,  Moore  R,  Rajasekar  A,  Wan-M.  The 
+SDSC  storage  resource  broker//Proceedings  of 
+the 
+Studies 
+Conference. 1998:1-12. 
+
+f-or  Advanced 
+
+IBMCentre 
+
+计算机学报. 2010,33(8):1472-1480. 
+
+[11]  Hoang  Tam  Vo,  Chun  Chen,  Beng  Chin  Ooi. 
+Towards elastic transactional cloud  storage  with 
+range  query  support.  Proceedings  of  the  VLDB 
+Endowment. 2010.3(1-2):506-514. 
+
+[12] Donald Kossmann, Tim Kraska, Simon Loesing, 
+Flavio 
+Stephan  Merkli,  Raman  Mittal, 
+Pfaffhauser.  Cloudy:  a  modular  cloud  storage 
+system.  Proceedings  of  the  VLDB  Endowment. 
+2010.3(1-2):1533-1536. 
+
+[13]  Yuan  Dong,  Haiyang  Zhu,  Jinzhan  Peng,  Fang 
+Wang, Michael P. Mesnier, Dawei Wang, Sun C. 
+Chan.  RFS:  a  network  file  system  for  mobile 
+devices and the cloud. ACM SIGOPS Operating 
+Systems Review. 2011.45(1):101-111. 
+
+[14]  Fay  Chang,  Jeffrey  Dean,  Sanjay  Ghemawat, 
+Wilson  C.  Hsieh,  Deborah  A.  Wallach,  Mike 
+Burrows, Tushar Chandra, Andrew Fikes, Robert 
+E. Gruber. Bigtable: a distributed storage system 
+for  structured  data//Proceedings  of 
+the  7th 
+symposium  on  Operating  systems  design  and 
+implementation. 2006. 
+
+[15] Jing Zhao, Xiangmei Hu, Xiaofeng Meng. ESQP: 
+an efficient SQL query p-rocessing for cloud data 
+second 
+management[C]. 
+international  workshop 
+data 
+management. 2010.10:1-8. 
+
+on  Cloud 
+
+Proceedings 
+
+of 
+
+for  P2P  Data  Services 
+
+[16]  Pawel  Jurczyk,  Li  Xiong.  Dynamic  Query 
+Processing 
+the 
+Cloud//Proceedings  of  the  20th  International 
+Conference  on  Database  and  Expert  Systems 
+Applications. 2009.8:396-411. 
+
+in 
+
+[17] Adrian Daniel Popescu, Debabrata Dash,  Verena 
+Kantere,  Anastasia  Ailamaki.  Adaptive  query 
+execution 
+the 
+cloud//Proceedings  of  the  second  international 
+work-shop on Cloud 
+management. 
+2010 .10:17-24. 
+
+for  data  management 
+
+data 
+
+in 
+
+[18]  Sanjay  Ghemawat,  Howard  Gobioff,  Shun-Taka 
+Leung.  The  Google  file  system//Proceedings  of 
+the  nineteenth  ACM  symposium  on  Operating 
+systems principles. 2003. 
+
+[19]  Ludascher  B,  Altintas  I,  Berkley  C,  Higgins  D, 
+Jaeger E, Jones M, Lee EA. Scientific workflow 
+
+

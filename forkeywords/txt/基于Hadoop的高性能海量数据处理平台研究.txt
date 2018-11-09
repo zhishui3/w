@@ -1,0 +1,273 @@
+﻿
+ 
+
+1  引言 
+
+云计算技术，尤其是谷歌提出的 MapReduce 计算框架被广泛应用于海量数据处理的各种应用，但是有
+
+一 类 非常 重 要的 海量 数据 处理 应 用却 很 难用 目前 的云 计算 技 术解 决 。这 类应 用同 时具 有 数据 密 集
+
+(Data-intensive)和计算密集(Computational-intensive)两个特点，我们称之为海量数据高性能计算。云
+
+计算可以将海量数据分布在大规模集群上进行并行处理，但是集群中每个节点的运算能力却不能满足应用
+
+ 
+
+ 
+
+需求，云计算技术的高性能处理能力有待加强。GPU(Graphics processing unit)的并行计算能力已经远远
+
+超越 CPU，并且越来越多的用于通用计算。因此本项目拟研究 CPU/GPU 协同的计算体系，将具有超强并行
+
+计算能力的 GPU 纳入到现有云计算 MapReduce 计算框架中，增强其高性能处理能力。 
+
+2  相关工作 
+
+MapReduce 是由 Google 提出的并行编程模型[1]。开发人员只需要提供自己的 Map 函数以及 Reduce 函
+
+数即可并行处理海量数据。由于 MapReduce 编程模型的简便性，它已经被广泛应用于数据挖掘、机器学习、
+
+文档聚类、统计机器翻译等领域。除了 Google 的 MapReduce 实现外，应用最广范的是 Hadoop 开源项目的
+
+MapReduce 实现。这两个实现都是基于大规模服务器集群，主要用于处理海量数据信息。虽然已经存在一
+
+些研究工作尝试实现高性能的 MapReduce 计算框架[2]，但是他们或是没有考虑海量数据的处理问题或是没
+
+有基于目前最通用 Hadoop 平台。为了降低在大规模共享主存环境中的编程复杂度，R.M. Yoo 等研究人员
+
+提出了基于多核 CPU 实现的 MapReduce 框架 Phoenix[3]。Phoenix 实现了在多核多处理器上共享主存模式
+
+的 MapReduce 运行环境，通过自动化并行管理和任务调度，简化并行程序设计，并且达到了平均 2.5 倍的
+
+加速比。Mars[4]是由 Wenbin Fang 等研究人员基于 Nvidia CUDA 编程方法实现的在 GPU 上运行的 MapReduce
+
+框架。Mars 通过在 GPU 上实现计数阶段和双调排序算法解决 GPU 不能动态分配内存等问题。同样为了将 GPU
+
+的强大计算能力与 MapReduce 的简单并行编程模型结合，Bryan Catanzaro 等研究人员也在 GPU 上实现了
+
+MapReduce 框架[5]。MapCG[6]是清华大学信息科学与技术国家实验室开发的同时支持 GPU 与 CPU 的
+
+MapReduce 框架。MapCG 定义了统一的编程语言，并将编程语言翻译成可以在 CPU 和 GPU 上执行的不同版本，
+
+然后用运行时库进行编译执行。 
+
+3  系统设计与实现 
+
+本系统基于开源 Hadoop 实现，遵循 MapReduce 编程模型，由一个 master 节点和多个 slave 节点组成。
+
+其中 master 节点肩负 HDFS NameNode 和 MapReduce JobTracker 的职责，slave 节点为 DataNode 和
+
+TaskTracker。该系统通过借鉴 OpenMP 并行编程模式，设计了一套注释码。程序员只需要在 Java 编写的
+
+MapReduce 源程序中标记处可并行执行部分，系统会将该部分自动转换成 CUDA 代码并在 GPU 上运行。由于
+
+系统事先并不知道主机是否配置了 GPU 和 CUDA，这就要求要动态的生成 CUDA 代码。当主机不具备 GPU 时，
+
+系统应该执行原本的 MapReduce 程序。 
+
+因此我们定义了一个新的 Java 类加载器：GPUClassLoader 来控制代码转换流程。GPUClassLoader 将
+
+识别出 JAVA 字节码中被注释码标记的部分，生成其相应的 CUDA 代码，编译连接 CUDA 代码生成动态链接库，
+并用 JNI 的方式调用相应的 CUDA 程序。 
+
+3.1 系统工作流程 
+
+该系统是以开源 Hadoop 中的 MapReduce 为基础架构，在 MapReduce 中设计一套注释码，这些注释码
+
+用于标记 Map 函数中需要并行的代码部分。并通过在传统的 JAVA class loader 进行改进，实现 GPU JAVA 
+
+class loader。并结合 CUDA 对程序进行处理。它的具体工作流程分为四个阶段，第一阶段为代码编写阶段。
+
+编写代码时，程序员对需要在 GPU 上并行的代码部分进行标记，标记方法是使用已定义的注释码。标记的
+
+代码内容，只能是循环，或特殊的数学函数。否则该句注释码将被视为无效。然后进入准备阶段，在准备
+
+阶段，系统将按照 MapReduce 中的方式将待处理数据划分为若干个 map 任务，并将这些任务分配到各个计
+
+算节点，并启动相应数量的 reduce 任务。在接下来的编译阶段，系统对程序进行编译，编译 map 函数时，
+
+首先进行预处理，再使用 JAVA complier 完成编译，可以获得含有注释码的 JAVA 字节码。在最后的运行阶
+
+段，GPU JAVA class loader 将自动检测本地计算环境，检查 CUDA 是否可用，若不可用，则直接在 CPU 上
+
+ 
+
+ 
+
+进行计算；若可用，则检测 CUDA 的具体版本，并识别 java Bytecode 中被注释的代码部分（即需要在 GPU
+
+上运行的部分）GPU JAVA class loader 对于识别出的 java Bytecode 中被注释的部分，生成相应 CUDA 代
+
+码，包括一段功能函数代码和一段执行代码，并编译这两段代码。用 JNI 的方式调用编译后的 CUDA 代码，
+
+相关数据被拷贝到 GPU 存储器上，CUDA 代码在 GPU 上运行。GPU 计算结束后，CUDA 代码的运算结果被拷贝
+
+回本地主存，Map 函数获取这些运算结果。Map 函数中未被标记的代码部分在 CPU 上运行。在运行过程中，
+
+Hadoop 调度节点跟踪所有 map 任务的运行状态，对于运行失败的 map 任务重新运行，直到所有 map 任务完
+
+成，Map 过程结束。接下来进行 Reduce 阶段，汇总 Map 阶段运算结果。完成计算。 
+
+3.2 注释码 
+
+本系统采用注释码的形式来标记并行执行的代码，这主要参考了 OpenMP 的设计思想。在 OpenMP 中，
+
+程序员通过在源程序中添加特定的注释码来标记一些并行操作，通过 OpenMP 编译器进行编译，生成可以在
+
+多线程环境中并行执行的程序。OpenMP 将注释码分为四类，第一类对代码部分进行并行划分（ omp 
+
+parallel）；第二类用于标注在不同的线程间共享的操作（omp for, omp sections）；第三类用于标记同步
+
+操 作 （omp barrier, omp  flush, omp  critical 等 ）；第四 类 用 于标 记数 据 属性 （ omp  shared, omp 
+
+threadprivate 等）。系统中的注释码采用 JAVA 注解的方式实现。系统会用 CUDA 实现一定数量的函数，这
+
+类函数的特征是数据传输量小，但计算量大，从而适宜在 GPU 下进行运算。目前本系统只定义了一些常用
+
+的注释码，如表 1 所示。其中，gmp parallel 和 gmp parallel for 用于标记源码中可被并行执行的代码
+
+部分。而 gmp sync 则用于实现全局同步，由于 CUDA 并不支持全局同步机制，所以系统会将被标记部分分
+
+割为两个子部分予以实现同步。gmp shared 和 gmp private 用于实现数据在 CPU memory 和 GPU memory
+
+之间的数据传输。 
+
+ 
+
+表 1 定义的注释码 
+
+Table 1 Defined Directive 
+
+注释码 
+
+语义说明 
+
+转换规则 
+
+标记源代码中的并行部分 
+
+一个或多个 CUDA 函数调用 
+
+标记 for 循环，每一轮循环由一个
+
+生成一个 CUDA 核心函数 
+
+GPU 线程执行 
+
+标记全局同步部分 
+
+标记全局共享部分 
+
+标记线程私有部分 
+
+将并行部分分割为两个子部分 
+
+数据将被存放到全局内存 
+
+数据将被存放寄存器或局部内存 
+
+gmp parallel 
+
+gmp parallel 
+
+for 
+
+gmp sync 
+
+gmp shared 
+
+gmp private 
+
+ 
+
+3.3  GPUClassLoader 实现 
+
+ 
+
+GPUClassLoader 继 承 自 AppClassLoader 类 。 通 过 覆 盖 defineClass 和 loadClass 方 法 ，
+
+GPUClassLoader 可以从 JAVA 字节码中找到被指定注释码标记的部分代码。然后启动代码生成流程，生成
+
+相应的 CUDA 代码后保存到磁盘文件中。然后调用 CUDA 编译器，编译、连接 CUDA 代码生成动态链接库。然
+
+后通过 JNI 调用的方式调用这部分 CUDA 代码，从而实现其在 GPU 上的运算。 
+
+4  系统优化 
+
+当主机配置了 GPU 和 CUDA 运行环境时，GPUClassloader 会启动代码转换和编译流程，生成动态链接
+
+ 
+
+ 
+
+库，加载到 JVM 中。但是这一编译加载过程引入了较大的时间延迟。因此本文在系统流程方面进行了相应
+
+的优化。在 Hadoop 启动新的 JVM 执行 Map 或 Reduce 任务的同时启动一个新的线程进行代码转换和编译工
+
+作。此线程一次性的将所有并行区域都转换成 CUDA 代码，将 CUDA 代码保存在磁盘文件中，然后进行编译、
+
+连接，生成动态链接库。 
+
+本文还对提出的计算框架的内存拷贝进行了优化。众所周知，在 CPU 主存和 GPU 内存之间拷贝数据效
+
+率非常低，因此需要尽量的减少数据交换的次数和数据交换的数量。目前的代码转换规则将并行区域内可
+
+能用到的数据全部拷贝到 GPU 的共享内存中，但实际上并不是全部的数据都需要拷贝到 GPU 内存中，也不
+
+是所有在 GPU 共享内存中的数据都需要拷贝回 CPU 内存。基于作者前期的研究成果[7]，本文采用数据流分
+
+析的方法优化 CPU 与 GPU 的内存交换。如果变量在 CUDA 程序内没有引用则不进行拷贝；如果 CUDA 程序中
+
+的变量在后续 CPU 代码中没有引用则不拷贝回 CPU 内存。此方法有效的减少了 CPU 与 GPU 内存数据的传输。 
+
+5  结束语 
+
+本文的核心内容是实现一种面向海量数据高性能计算的 CPU、GPU 协同计算方法，其实现形式是设计一
+
+个可以同时利用 CPU 和 GPU 计算能力的，基于计算机集群的平台。该种方法可以以便捷的方式整合计算机
+
+集群中的 CPU、GPU 计算资源，从而提高计算机集群的海量数据处理性能。本文提出的计算框架已经作为核
+
+心计算方式应用于具体科研项目。在北京市科技计划课题“能源行业海量数据成像云计算系统产业化”中
+
+用于地震数据的叠前偏移计算，实践结果表明，原本采用 CPU 计算需要数小时，采用 GPU 加速后需要 20 分
+
+钟的数据量，在此框架中（5 节点）仅需要约 5 分钟即可计算完毕，可见此框架在不增加程序设计难度的
+
+前提下，将 Hadoop 的海量数据处理能力和 GPU 的高性能计算能力良好的结合在一起，具有较好的应用价值。 
+
+ 
+
+References: 
+
+[1]J.  Dean and  S. Ghemawat,  “MapReduce: simplified  data processing  on  large  clusters,”  Communications of the  ACM,    vol. 51, Jan. 
+
+2008, pp. 107–113. 
+
+[2]  C.  Vecchiola,  S.  Pandey  and  R.  Buyya,  “High-performance  cloud  computing:  A  view  of  scientific  applications,”  2009  10th 
+
+International Symposium on Pervasive Systems, Algorithms, and Networks, 2009, pp. 4–16. 
+
+[3] R.M. Yoo, A. Romano and C. Kozyrakis, “Phoenix rebirth: Scalable MapReduce on a large-scale shared-memory system,” Workload 
+
+Characterization, 2009. IISWC 2009. IEEE International Symposium on, 2009, pp. 198 -207. 
+
+[4] W. Fang, B. He, Q. Luo and N.K. Govindaraju, “Mars: Accelerating MapReduce with Graphics Processors,” Parallel and Distributed 
+
+Systems, IEEE Transactions on,   vol. 22, Apr. 2011, pp. 608 -620. 
+
+[5] B. Catanzaro, N. Sundaram and K. Keutzer, “A map reduce framework for programming graphics processors,” Workshop on Software 
+
+Tools for MultiCore Systems, 2008. 
+
+[6] C. Hong, D. Chen, W. Chen, W. Zheng and H. Lin, “MapCG: writing parallel program portable between CPU and GPU,” Proceedings 
+
+of  the  19th  international  conference  on  Parallel  architectures  and  compilation  techniques,   New  York,  NY,  USA:  ACM,  2010,  pp. 
+
+217–226. 
+
+[7]Yanlong  Zhai,  Hongyi  Su  and  Shouyi  Zhan.  A  Data  Flow  Optimization  based  approach  for  BPEL  Processes  Partition,  IEEE 
+
+International Conference on e-Business Engineering (ICEBE 2007), HongKong, China 
+
+
